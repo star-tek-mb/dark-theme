@@ -6,7 +6,7 @@ pub fn main() !void {
     var bw = std.io.bufferedWriter(stdout_file);
     const stdout = bw.writer();
 
-    try stdout.print("Dark theme preference is {}\n", .{darktheme.isDark()});
+    try stdout.print("Dark theme preference is {}\n", .{try darktheme.isDark()});
 
     try bw.flush(); // don't forget to flush!
 }

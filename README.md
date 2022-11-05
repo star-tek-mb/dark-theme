@@ -5,7 +5,7 @@ Query system dark/light theme preference.
 # Platform
 
  - [x] Windows
- - [ ] Linux
+ - [x] Linux
  - [ ] MacOS
 
 # API

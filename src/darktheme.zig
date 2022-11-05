@@ -1,4 +1,5 @@
 const std = @import("std");
+const builtin = @import("builtin");
 
 const HKEY_CURRENT_USER = @intToPtr(std.os.windows.HKEY, @as(i64, 0x80000001));
 const KEY_QUERY_VALUE = 0x0001;
@@ -23,14 +24,54 @@ extern "dwmapi" fn DwmSetWindowAttribute(
     cbAttribute: std.os.windows.DWORD,
 ) callconv(std.os.windows.WINAPI) std.os.windows.HRESULT;
 
-pub fn isDark() bool {
-    var bufSize: std.os.windows.DWORD = @sizeOf(std.os.windows.DWORD);
-    var light: std.os.windows.DWORD = undefined;
-    var hKey: std.os.windows.HKEY = undefined;
-    _ = std.os.windows.advapi32.RegOpenKeyExW(HKEY_CURRENT_USER, std.unicode.utf8ToUtf16LeStringLiteral("Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"), 0, KEY_READ, &hKey);
-    _ = RegQueryValueExW(hKey, std.unicode.utf8ToUtf16LeStringLiteral("SystemUsesLightTheme"), null, null, @ptrCast(*std.os.windows.BYTE, &light), &bufSize);
+pub fn isDark() !bool {
+    switch (builtin.os.tag) {
+        .windows => {
+            var bufSize: std.os.windows.DWORD = @sizeOf(std.os.windows.DWORD);
+            var light: std.os.windows.DWORD = undefined;
+            var hKey: std.os.windows.HKEY = undefined;
+            var status = std.os.windows.advapi32.RegOpenKeyExW(HKEY_CURRENT_USER, std.unicode.utf8ToUtf16LeStringLiteral("Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"), 0, KEY_READ, &hKey);
+            if (status != 0) {
+                return error.QueryError;
+            }
+            status = RegQueryValueExW(hKey, std.unicode.utf8ToUtf16LeStringLiteral("SystemUsesLightTheme"), null, null, @ptrCast(*std.os.windows.BYTE, &light), &bufSize);
+            if (status != 0) {
+                return error.QueryError;
+            }
 
-    return if (light == 0) true else false;
+            return if (light == 0) true else false;
+        },
+        .linux => {
+            var buffer: [4096]u8 = undefined;
+            var fba = std.heap.FixedBufferAllocator.init(&buffer);
+            var allocator = fba.allocator();
+            var exec = std.ChildProcess.exec(.{
+                .allocator = allocator,
+                .argv = &.{
+                    "sh",
+                    "-c",
+                    "dbus-send --print-reply=literal --reply-timeout=1000 --dest=org.freedesktop.portal.Desktop /org/freedesktop/portal/desktop org.freedesktop.portal.Settings.Read string:'org.freedesktop.appearance' string:'color-scheme'",
+                },
+                .max_output_bytes = 4096,
+            }) catch return error.QueryError;
+            defer {
+                allocator.free(exec.stdout);
+                allocator.free(exec.stderr);
+            }
+            if (exec.stdout.len > 0) {
+                // skip '\n' character
+                var val = exec.stdout[exec.stdout.len - 2] - '0';
+                if (val == 1) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return error.QueryError;
+            }
+        },
+        else => @compileError("unsupported"),
+    }
 }
 
 pub fn setDarkWindow(hwnd: std.os.windows.HWND) void {

@@ -72,6 +72,30 @@ pub fn isDark() !bool {
                 return error.QueryError;
             }
         },
+        .macos => {
+            var buffer: [4096]u8 = undefined;
+            var fba = std.heap.FixedBufferAllocator.init(&buffer);
+            var allocator = fba.allocator();
+            var exec = std.ChildProcess.exec(.{
+                .allocator = allocator,
+                .argv = &.{
+                    "defaults",
+                    "read",
+                    "-g",
+                    "AppleInterfaceStyle",
+                },
+                .max_output_bytes = 4096,
+            }) catch return error.QueryError;
+            defer {
+                allocator.free(exec.stdout);
+                allocator.free(exec.stderr);
+            }
+            if (exec.stdout.len >= 4 and std.mem.eql(u8, "Dark", exec.stdout[0..4])) {
+                return true;
+            } else {
+                return false;
+            }
+        },
         else => @compileError("unsupported"),
     }
 }

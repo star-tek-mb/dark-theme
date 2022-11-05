@@ -1,13 +1,7 @@
 const std = @import("std");
 
 pub fn build(b: *std.build.Builder) void {
-    const target = b.standardTargetOptions(.{
-        .default_target = .{
-            .cpu_arch = .x86_64,
-            .os_tag = .windows,
-            .abi = .gnu,
-        },
-    });
+    const target = b.standardTargetOptions(.{});
 
     // Standard release options allow the person running `zig build` to select
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.

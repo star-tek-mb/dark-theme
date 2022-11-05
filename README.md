@@ -14,7 +14,7 @@ Query system dark/light theme preference.
 const darktheme = @import("darktheme.zig");
 
 // get bool value of system preference
-var isDark = darktheme.isDark();
+var isDark = darktheme.isDark() catch false;
 
 // windows only
 // apply dark borders to window

@@ -6,7 +6,7 @@ Query system dark/light theme preference.
 
  - [x] Windows (tested)
  - [x] Linux (tested)
- - [x] MacOS (needs testing)
+ - [x] MacOS (tested)
 
 # API
 
@@ -20,3 +20,7 @@ var isDark = darktheme.isDark();
 // apply dark borders to window
 darktheme.setDarkWindow(hwnd);
 ```
+
+# Credits
+
+Thanks to [cryptocode](https://github.com/cryptocode) for testing out MacOS code

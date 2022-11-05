@@ -59,7 +59,9 @@ pub fn isDark() !bool {
                 allocator.free(exec.stderr);
             }
             if (exec.stdout.len > 0) {
-                // skip '\n' character
+                // correct output is
+                //    variant       variant          uint32 1
+                // parse last character, skip '\n' character
                 var val = exec.stdout[exec.stdout.len - 2] - '0';
                 if (val == 1) {
                     return true;

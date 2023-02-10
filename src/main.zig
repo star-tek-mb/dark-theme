@@ -1,5 +1,5 @@
 const std = @import("std");
-const darktheme = @import("darktheme.zig");
+const darktheme = @import("darktheme");
 
 pub fn main() !void {
     const stdout_file = std.io.getStdOut().writer();

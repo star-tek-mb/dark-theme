@@ -4,8 +4,7 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    b.addModule(.{
-        .name = "darktheme",
+    const module = b.addModule("darktheme", .{
         .source_file = .{ .path = "src/darktheme.zig" },
     });
 
@@ -15,7 +14,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    exe.addModule("darktheme", b.modules.get("darktheme").?);
+    exe.addModule("darktheme", module);
     exe.install();
 
     const run_cmd = exe.run();

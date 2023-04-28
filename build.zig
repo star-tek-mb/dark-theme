@@ -15,10 +15,9 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     exe.addModule("darktheme", module);
-    exe.install();
+    b.installArtifact(exe);
 
-    const run_cmd = exe.run();
-    run_cmd.step.dependOn(b.getInstallStep());
+    const run_cmd = b.addRunArtifact(exe);
     if (b.args) |args| {
         run_cmd.addArgs(args);
     }

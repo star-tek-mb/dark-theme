@@ -1,7 +1,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
 
-const HKEY_CURRENT_USER = @intToPtr(std.os.windows.HKEY, @as(i64, 0x80000001));
+const HKEY_CURRENT_USER = @as(std.os.windows.HKEY, @ptrFromInt(@as(i64, 0x80000001)));
 const KEY_QUERY_VALUE = 0x0001;
 const KEY_ENUMERATE_SUB_KEYS = 0x0008;
 const KEY_NOTIFY = 0x0010;
@@ -34,7 +34,7 @@ pub fn isDark() !bool {
             if (status != 0) {
                 return error.QueryError;
             }
-            status = RegQueryValueExW(hKey, std.unicode.utf8ToUtf16LeStringLiteral("SystemUsesLightTheme"), null, null, @ptrCast(*std.os.windows.BYTE, &light), &bufSize);
+            status = RegQueryValueExW(hKey, std.unicode.utf8ToUtf16LeStringLiteral("SystemUsesLightTheme"), null, null, @as(*std.os.windows.BYTE, @ptrCast(&light)), &bufSize);
             if (status != 0) {
                 return error.QueryError;
             }
